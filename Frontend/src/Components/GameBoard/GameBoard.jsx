@@ -74,8 +74,7 @@ const GameBoard = () => {
 
     useEffect(() => {
         console.log(`activeTile has changed to: ${activeTile}`);
-        console.log('tilesPieceCanMoveTo', tilesPieceCanMoveto)
-        console.log(tilesPieceCanMoveto.includes(13))
+        console.log('tilesPieceCanMoveTo', tilesPieceCanMoveto);
       }, [activeTile, tilesPieceCanMoveto]);
 
     useEffect(() => {
@@ -93,7 +92,7 @@ const GameBoard = () => {
     };
     }, []);
 
-    const movePieceIfPossible = async (index) => {
+    const movePieceIfPossible = async (index) => {   
 
         if (activeTile === null){
             setActiveTile(index);
@@ -108,6 +107,15 @@ const GameBoard = () => {
 
             let currentRow = Math.floor(activeTile / 5)
             let currentCol = activeTile % 5
+
+            // if your piece can't move there, then don't move
+            if (!gameService.canMoveThere([currentRow, currentCol], [newRow, newCol], team )){
+                console.log('invalid move')
+                resetHighlights()
+                return
+            }
+
+
 
             try {
                 await axios.post('http://localhost:5000/move', { data: {
@@ -134,6 +142,14 @@ const GameBoard = () => {
         
     }
 
+    const resetHighlights = () => {
+        console.log('reseting active tile')
+        setActiveTile(null)
+        console.log('reseting highlighted options')
+        setTilesPieceCanMoveto([])
+        return
+    }
+
     const getAvailableMovesForCell = (index) => {
 
         if (gameBoard[index] === null || gameBoard[index].owner !== teamColor){
@@ -144,7 +160,7 @@ const GameBoard = () => {
         let currentCol = index % 5
 
 
-        const cells = gameService.getAvailableMovesForPiece([currentRow, currentCol], gameService.getMoveCardsForPlayer(team), team)
+        const cells = gameService.getAvailableMovesForPiece([currentRow, currentCol], team)
         console.log([currentRow, currentCol])
         console.log(cells)
 
@@ -156,8 +172,6 @@ const GameBoard = () => {
 
         return formattedCells
     }
-
-
 
 
 

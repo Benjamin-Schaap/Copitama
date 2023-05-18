@@ -161,10 +161,11 @@ export class GameService {
         return this.floaterMove
     }
 
-    getAvailableMovesForPiece = (pieceLocation, moveCards, team) => {
+    getAvailableMovesForPiece = (pieceLocation, team) => {
         let validMoves = [];
         let pieceRowCoord = pieceLocation[0];
         let pieceColCoord = pieceLocation[1];
+        let moveCards = team === 1 ? this.player1MoveCards : this.player2MoveCards
 
 
         moveCards.forEach(moveCard => {
@@ -197,5 +198,17 @@ export class GameService {
         })
 
         return validMoves
+    }
+
+    canMoveThere = (pieceLocation, destination, team) => {
+
+        const validMoves = this.getAvailableMovesForPiece(pieceLocation, team)
+
+        if (validMoves.some(move => move[0] === destination[0] && move[1] === destination[1])) {
+            return true
+        }
+
+        return false
+
     }
 }
