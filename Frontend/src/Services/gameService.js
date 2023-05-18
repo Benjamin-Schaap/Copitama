@@ -60,7 +60,7 @@ export class GameService {
         { isKing: false, isPawn: false, owner: null }],
         [{ isKing: false, isPawn: false, owner: null },
         { isKing: false, isPawn: false, owner: null },
-        { isKing: true, isPawn: false, owner: Player.BLUE },
+        { isKing: false, isPawn: false, owner: null },
         { isKing: false, isPawn: false, owner: null },
         { isKing: false, isPawn: false, owner: null }],
         [{ isKing: false, isPawn: false, owner: null },
@@ -70,7 +70,7 @@ export class GameService {
         { isKing: false, isPawn: false, owner: null }],
         [{ isKing: false, isPawn: true, owner: Player.BLUE },
         { isKing: false, isPawn: true, owner: Player.BLUE },
-        { isKing: false, isPawn: false, owner: null },
+        { isKing: true, isPawn: false, owner: Player.BLUE },
         { isKing: false, isPawn: true, owner: Player.BLUE },
         { isKing: false, isPawn: true, owner: Player.BLUE }]]
 
@@ -85,9 +85,40 @@ export class GameService {
 
     }
 
+    convertBackendToFontend = (board) => {
+
+        let newBoard = [];
+
+        // Parse board if it's a JSON string
+        if (typeof board === 'string') {
+            board = JSON.parse(board);
+        }
+
+        // Flatten the array of arrays and transform the elements
+        board.forEach(row => {
+            row.forEach(cell => {
+                if (cell === null) {
+                    newBoard.push({ isKing: false, isPawn: false, owner: null });
+                } else {
+                    newBoard.push({
+                        isKing: cell.isMasterMonk,
+                        isPawn: !cell.isMasterMonk,
+                        owner: cell.team === 1 ? "red" : "blue"
+                    });
+                }
+            });
+        });
+
+        return newBoard;
+
+    }
+
     convertToDesiredStructure = (board) => {
 
         let newBoard = [];
+
+        console.log('convertToDesiredStructure - board')
+        console.log(board)
 
         board.forEach(row => {
             row.forEach(cell => {

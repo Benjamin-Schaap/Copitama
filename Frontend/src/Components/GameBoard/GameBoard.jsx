@@ -84,7 +84,7 @@ const GameBoard = () => {
     source.onmessage = (event) => {
         console.log('Received new data from SSE')
         console.log(event.data)
-        setBoard(gameService.convertToDesiredStructure(event.data));
+        setBoard(gameService.convertBackendToFontend(event.data));
     };
 
     // end the SSE connection when component dismounts
