@@ -21,7 +21,6 @@ import cx from 'classnames';
     let getActiveTheme = () => {
 
       if (shouldHighlight){
-        console.log('highlight hit')
         return "border-1 bg-yellow-300 border-yellow-400"
       } else if ((!isKing && !isPawn) || !isActive){
         return 'border-slate-500 bg-[#dcd8cf]' // bg-white

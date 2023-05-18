@@ -69,9 +69,6 @@ const GameBoard = () => {
     const team = 1
     const teamColor = Player.BLUE
 
-    //formatBackendBoardToFrontEnd
-      
-
     useEffect(() => {
         console.log(`activeTile has changed to: ${activeTile}`);
         console.log('tilesPieceCanMoveTo', tilesPieceCanMoveto);
@@ -81,8 +78,6 @@ const GameBoard = () => {
     const source = new EventSource('http://localhost:5000/realtime-feed');
 
     source.onmessage = (event) => {
-        console.log('Received new data from SSE')
-        console.log(event.data)
         setBoard(gameService.convertBackendToFontend(event.data));
     };
 
@@ -98,8 +93,6 @@ const GameBoard = () => {
             setActiveTile(index);
         } else if (gameBoard[activeTile].owner !== null 
             && gameBoard[activeTile].owner !== gameBoard[index].owner){
-
-                console.log('moved piece')
 
             // rows are 5 squares long.
             let newRow = Math.floor(index / 5)
@@ -127,8 +120,7 @@ const GameBoard = () => {
                 console.log('Continuing locally')
             }
 
-            setActiveTile(null)
-            setTilesPieceCanMoveto([])
+            resetHighlights()
             return
         } 
         
@@ -143,11 +135,9 @@ const GameBoard = () => {
     }
 
     const resetHighlights = () => {
-        console.log('reseting active tile')
+        console.log('reseting highlights')
         setActiveTile(null)
-        console.log('reseting highlighted options')
         setTilesPieceCanMoveto([])
-        return
     }
 
     const getAvailableMovesForCell = (index) => {
@@ -161,8 +151,6 @@ const GameBoard = () => {
 
 
         const cells = gameService.getAvailableMovesForPiece([currentRow, currentCol], team)
-        console.log([currentRow, currentCol])
-        console.log(cells)
 
         let formattedCells = []
 

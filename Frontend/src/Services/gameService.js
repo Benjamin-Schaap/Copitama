@@ -117,9 +117,6 @@ export class GameService {
 
         let newBoard = [];
 
-        console.log('convertToDesiredStructure - board')
-        console.log(board)
-
         board.forEach(row => {
             row.forEach(cell => {
                 if (cell.owner === null) {
