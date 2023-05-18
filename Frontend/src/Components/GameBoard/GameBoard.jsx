@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios'
 import GameCell from "../GameCell/GameCell";
 import Player from "../PlayerEnum";
+import { MoveCard, Movement, GamePiece, GameService } from "../../Services/gameService";
 
 // TODO: Delete after getting the backend up and running
 // const startingBoard = [{isKing: false, isPawn: true, owner: Player.RED},
@@ -57,52 +58,33 @@ const startingBoard = [{isKing: false, isPawn: false, owner: null},
     {isKing: false, isPawn: false, owner: null}
 ]
 
+const gameService = new GameService()
+
 const GameBoard = () => {
-    const [gameBoard, setBoard] = useState(startingBoard);
+    const [gameBoard, setBoard] = useState(gameService.getBoard());
     const [activeTile, setActiveTile] = useState(null)
+    const [tilesPieceCanMoveto, setTilesPieceCanMoveto] = useState([])
+
+    // TODO: Change this
+    const team = 1
+    const teamColor = Player.BLUE
 
     //formatBackendBoardToFrontEnd
-
-    const convertToDesiredStructure = (board) =>{
-
-        let parsedBoard = null 
-
-        try{
-            parsedBoard = JSON.parse(board)
-        } catch(e){
-            console.log('fucked up')
-        }
-
-        let newBoard = [];
-        
-        parsedBoard.forEach(row => {
-            row.forEach(cell => {
-                if (cell === null) {
-                    newBoard.push({ isKing: false, isPawn: false, owner: null });
-                } else {
-                    newBoard.push({ 
-                    isKing: cell.isMasterMonk, 
-                    isPawn: !cell.isMasterMonk, 
-                    owner: cell.team === 1 ? "red" : "blue"
-                  });
-                }
-              });
-        })
-
-        return newBoard;
-      }
       
 
     useEffect(() => {
         console.log(`activeTile has changed to: ${activeTile}`);
-      }, [activeTile]);
+        console.log('tilesPieceCanMoveTo', tilesPieceCanMoveto)
+        console.log(tilesPieceCanMoveto.includes(13))
+      }, [activeTile, tilesPieceCanMoveto]);
 
     useEffect(() => {
     const source = new EventSource('http://localhost:5000/realtime-feed');
 
     source.onmessage = (event) => {
         console.log('Received new data from SSE')
-        setBoard(convertToDesiredStructure(event.data));
+        console.log(event.data)
+        setBoard(gameService.convertToDesiredStructure(event.data));
     };
 
     // end the SSE connection when component dismounts
@@ -112,11 +94,6 @@ const GameBoard = () => {
     }, []);
 
     const movePieceIfPossible = async (index) => {
-
-        // console.log(index)
-        // console.log('active', activeTile, 'index', index)
-        // console.log(gameBoard[activeTile].owner !== null)
-        // console.log(gameBoard[activeTile].owner !== gameBoard[index].owner)
 
         if (activeTile === null){
             setActiveTile(index);
@@ -139,32 +116,46 @@ const GameBoard = () => {
                   }});
             } catch(error){
                 console.error(error)
+                console.log('Continuing locally')
             }
 
             setActiveTile(null)
+            setTilesPieceCanMoveto([])
             return
+        } 
+        
+        if (gameBoard[index].owner === teamColor){ //TODO: refactor to not use color
+            setTilesPieceCanMoveto(getAvailableMovesForCell(index))
+        }else{
+            setTilesPieceCanMoveto([])
         }
 
         setActiveTile(index)
         
     }
 
+    const getAvailableMovesForCell = (index) => {
 
-    // const movePiece = async (e) => {
-    //     e.preventDefault();
-    //     try {
-    //       const response = await fetch('/move', {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({ currentPosition, destination })
-    //       });
-    //       const data = await response.json();
-    //       setMoveValid(data.moveValid);
-    //     } catch (error) {
-    //       console.error(error);
-    //     }
-    //   };
+        if (gameBoard[index] === null || gameBoard[index].owner !== teamColor){
+            return null
+        }
 
+        let currentRow = Math.floor(index / 5)
+        let currentCol = index % 5
+
+
+        const cells = gameService.getAvailableMovesForPiece([currentRow, currentCol], gameService.getMoveCardsForPlayer(team), team)
+        console.log([currentRow, currentCol])
+        console.log(cells)
+
+        let formattedCells = []
+
+        cells.forEach(cell => {
+            formattedCells.push((cell[0] * 5) + cell[1])
+        })
+
+        return formattedCells
+    }
 
 
 
@@ -180,7 +171,8 @@ const GameBoard = () => {
                     isKing={tile.isKing} 
                     isPawn={tile.isPawn}
                     owner={tile.owner}
-                    isActive={activeTile === index} />
+                    isActive={activeTile === index}
+                    shouldHighlight={tilesPieceCanMoveto.includes(index)} />
             ))}
 
         </div>

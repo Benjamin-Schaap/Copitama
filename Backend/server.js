@@ -112,7 +112,7 @@ async function run() {
                 localGameState = game.getGameStatus()
 
                 console.log('updating clients')
-                console.log(localGameState.board)
+                console.log(localGameState)
 
                 //console.log('Pushing to data to clients', game.getGameStatus());
 

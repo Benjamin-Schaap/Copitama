@@ -6,7 +6,7 @@ import cx from 'classnames';
 
 
   
-  const GameCell = ({ owner, isKing, isPawn, index, handleClick, isActive }) => {
+  const GameCell = ({ owner, isKing, isPawn, index, handleClick, isActive, shouldHighlight }) => {
 
     let getColor = () => {
 
@@ -20,8 +20,11 @@ import cx from 'classnames';
     // TODO: Only active if the cell belongs to that player.
     let getActiveTheme = () => {
 
-      if ((!isKing && !isPawn) || !isActive){
-        return 'border-slate-500 bg-white'
+      if (shouldHighlight){
+        console.log('highlight hit')
+        return "border-1 bg-yellow-300 border-yellow-400"
+      } else if ((!isKing && !isPawn) || !isActive){
+        return 'border-slate-500 bg-[#dcd8cf]' // bg-white
       }
 
       if (owner === Player.BLUE){
