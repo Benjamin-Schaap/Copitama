@@ -1,98 +1,33 @@
-import React, { useState, useEffect } from "react";
-import axios from 'axios'
+import React, { useState, useContext } from "react";
 import GameCell from "../GameCell/GameCell";
 import Player from "../PlayerEnum";
 import { MoveCard, Movement, GamePiece, GameService } from "../../Services/gameService";
+import GameServiceContext from "../../Contexts/GameServiceContext";
 
-// TODO: Delete after getting the backend up and running
-// const startingBoard = [{isKing: false, isPawn: true, owner: Player.RED},
-//     {isKing: false, isPawn: true, owner: Player.RED},
-//     {isKing: true, isPawn: false, owner: Player.RED},
-//     {isKing: false, isPawn: true, owner: Player.RED},
-//     {isKing: false, isPawn: true, owner: Player.RED}, // 5 of red's pieces
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: false, owner: null},
-//     {isKing: false, isPawn: true, owner: Player.BLUE},
-//     {isKing: false, isPawn: true, owner: Player.BLUE},
-//     {isKing: true, isPawn: false, owner: Player.BLUE},
-//     {isKing: false, isPawn: true, owner: Player.BLUE},
-//     {isKing: false, isPawn: true, owner: Player.BLUE}
-// ]
-const startingBoard = [{isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null},
-    {isKing: false, isPawn: false, owner: null}
-]
+const GameBoard = ({onMoveSubmit }) => {
+    const gameService = useContext(GameServiceContext);
 
-const gameService = new GameService()
-
-const GameBoard = () => {
-    const [gameBoard, setBoard] = useState(gameService.getBoard());
     const [activeTile, setActiveTile] = useState(null)
     const [tilesPieceCanMoveto, setTilesPieceCanMoveto] = useState([])
 
     // TODO: Change this
-    const team = 1
-    const teamColor = Player.BLUE
-
-    useEffect(() => {
-        console.log(`activeTile has changed to: ${activeTile}`);
-        console.log('tilesPieceCanMoveTo', tilesPieceCanMoveto);
-      }, [activeTile, tilesPieceCanMoveto]);
-
-    useEffect(() => {
-    const source = new EventSource('http://localhost:5000/realtime-feed');
-
-    source.onmessage = (event) => {
-        setBoard(gameService.convertBackendToFontend(event.data));
-    };
-
-    // end the SSE connection when component dismounts
-    return () => {
-        source.close();
-    };
-    }, []);
+    const team = gameService.getActivePlayer()
+    const teamColor = team === 1? Player.BLUE : Player.RED
+    const board = gameService.getBoard()
 
     const movePieceIfPossible = async (index) => {   
 
+        // TODO refactor so FE and BE identify owners the same
+        const owner = gameService.getActivePlayer() === 1 ? 'blue' : 'red'
+
         if (activeTile === null){
             setActiveTile(index);
-        } else if (gameBoard[activeTile].owner !== null 
-            && gameBoard[activeTile].owner !== gameBoard[index].owner){
+        } else if (board[activeTile].owner !== null 
+            && board[activeTile].owner !== board[index].owner
+            && board[activeTile].owner === owner){
+
+            // TODO: validate if the piece is owned by the active player
+            // TODO: tie move cards to active player pieces and highlighting.
 
             // rows are 5 squares long.
             let newRow = Math.floor(index / 5)
@@ -108,23 +43,14 @@ const GameBoard = () => {
                 return
             }
 
-
-
-            try {
-                await axios.post('http://localhost:5000/move', { data: {
-                    currentPosition: [currentRow, currentCol],
-                    destination: [newRow, newCol]
-                  }});
-            } catch(error){
-                console.error(error)
-                console.log('Continuing locally')
-            }
+            onMoveSubmit([currentRow, currentCol], [newRow, newCol]);
+            console.log('submitted')
 
             resetHighlights()
             return
-        } 
+        }
         
-        if (gameBoard[index].owner === teamColor){ //TODO: refactor to not use color
+        if (board[index].owner === teamColor){ //TODO: refactor to not use color
             setTilesPieceCanMoveto(getAvailableMovesForCell(index))
         }else{
             setTilesPieceCanMoveto([])
@@ -142,7 +68,7 @@ const GameBoard = () => {
 
     const getAvailableMovesForCell = (index) => {
 
-        if (gameBoard[index] === null || gameBoard[index].owner !== teamColor){
+        if (board[index] === null || board[index].owner !== teamColor || team === null){
             return null
         }
 
@@ -161,12 +87,10 @@ const GameBoard = () => {
         return formattedCells
     }
 
-
-
     return (
         <div className=' flex justify-center flex-wrap w-[85%] min-h-[80%] md:w-[500px] '>
 
-            {gameBoard.map((tile, index) => (
+            {board.map((tile, index) => (
                 <GameCell 
                     handleClick={movePieceIfPossible} 
                     index={index} 
@@ -174,7 +98,8 @@ const GameBoard = () => {
                     isPawn={tile.isPawn}
                     owner={tile.owner}
                     isActive={activeTile === index}
-                    shouldHighlight={tilesPieceCanMoveto.includes(index)} />
+                    shouldHighlight={tilesPieceCanMoveto.includes(index)}
+                    key={index} />
             ))}
 
         </div>

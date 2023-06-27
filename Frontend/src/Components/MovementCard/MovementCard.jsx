@@ -3,16 +3,20 @@ import cx from 'classnames';
 
 
   
-  const MovementCard = ({ title, cellsToHighlight = [] }) => {
+  const MovementCard = ({ title = "",
+  cellsToHighlight = [],
+  isOpponentCard = false,
+  handleSelection = () => {},
+  isSelected = false}) => {
 
     //cellsToHighlight = [[0,2], [0, -2], [1,0]]
+    //console.log(title, cellsToHighlight)
 
     // the piece is always in the middle of the board in a movement card.
     const piecePosition = [2,2]
 
     const getHighlightedCells = ( cellsToHighlight ) => {
       
-
         // HEX COLORS
         //#eaed93
         // #918672
@@ -46,18 +50,39 @@ import cx from 'classnames';
         }
     }
 
+    const rotateGrid = () =>{
+
+      if (isOpponentCard){
+        return 'transform rotate-180'
+      }else{
+        return ''
+      }
+    }
+
+    const highlightBorder = () => {
+      
+      if (isSelected){
+        return 'border-red-500'
+      }
+
+      return ''
+
+    }
+
 
 
     return (
-      <div className=" border bg-[#dcd8cf] rounded-[10px] m-4 py-4 px-12 text-center">
+      <div onClick={() => handleSelection(title)} className={cx("border-4 border-[#7D7A79] bg-[#dcd8cf] rounded-[10px] m-4 py-4 px-12 text-center", highlightBorder())}>
+        <div className={cx(rotateGrid())}>
 
-            {board.map((row, rowIndex) => (
-                <div key={rowIndex} className='flex'>
-                {row.map((cell, colIndex) => (
-                    <div key={colIndex} className={cx('w-6 h-6 border border-[#7D7A79] m-[2px]', getCellColor(cell))} />
-                ))}
-            </div>
-      ))}
+              {board.map((row, rowIndex) => (
+                  <div key={rowIndex} className='flex'>
+                  {row.map((cell, colIndex) => (
+                      <div key={colIndex} className={cx('w-6 h-6 border border-[#7D7A79] m-[2px]', getCellColor(cell))} />
+                  ))}
+              </div>
+        ))}
+        </div>
 
         <p className=" text-lg font-semibold">{title.toUpperCase()}</p>
 

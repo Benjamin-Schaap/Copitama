@@ -32,11 +32,11 @@ class GamePiece {
     }
 }
 
-const tiger = new MoveCard('tiger', [new Movement(0, -1), new Movement(0, 2)]);
-const elephant = new MoveCard('elephant', [new Movement(1, 0), new Movement(-1, 0), new Movement(-1, 1), new Movement(1, 1)]);
-const hackMove = new MoveCard('hack', [new Movement(0, 4)]);
+const tiger = new MoveCard('tiger', [new Movement(0, 1), new Movement(0, -2)]);
+const elephant = new MoveCard('elephant', [new Movement(-1, 0), new Movement(1, 0), new Movement(1, -1), new Movement(-1, -1)]);
+const hackMove = new MoveCard('hack', [new Movement(0, 2,), new Movement(2, 0), new Movement(2, 2)]);
 const crane = new MoveCard('crane', [new Movement(0, -1), new Movement(-1, 1), new Movement(1, 1)]);
-const dragon = new MoveCard('dragon', [new Movement(-1, -1), new Movement(1, -1), new Movement(-2, 1), new Movement(2, 1)]);
+const dragon = new MoveCard('dragon', [new Movement(1, 1), new Movement(-1, 1), new Movement(2, -1), new Movement(-2, -1)]);
 
 export class Copitama {
 
@@ -47,21 +47,22 @@ export class Copitama {
         // History of moves
         this.history = [];
         this.player1MoveCards = [tiger, crane];
-        this.player2MoveCards = [elephant, hackMove];
-        this.floaterMove = [dragon];
+        this.player2MoveCards = [elephant, dragon];
+        this.floaterMove = [hackMove];
         this.gameOver = false;
+        this.activePlayer = 1
 
         // setting up the pieces
         for (let index = 0; index < 5; index++) {
 
             // the middle piece is the master monk in a row
             if (index === 2) {
-                this.board[0][index] = new GamePiece(true, 1);
-                this.board[4][index] = new GamePiece(true, 2);
+                this.board[0][index] = new GamePiece(true, 2);
+                this.board[4][index] = new GamePiece(true, 1);
                 continue;
             }
-            this.board[0][index] = new GamePiece(false, 1);
-            this.board[4][index] = new GamePiece(false, 2);
+            this.board[0][index] = new GamePiece(false, 2);
+            this.board[4][index] = new GamePiece(false, 1);
         }
     }
 
@@ -99,6 +100,7 @@ export class Copitama {
                 // reflect the vertical value for player 2, since they're on the bottom
                 if (team === 2) {
                     newRowCoord = pieceRowCoord + movement.vertical * -1;
+                    newColCoord = pieceColCoord - movement.horizontal;
                 }
 
                 // make sure the movement would still be on the board
@@ -153,13 +155,45 @@ export class Copitama {
         return wasThereAValidMove
     }
 
+    isMoveCardInMoveCards(moveCards, moveCard) {
+        return moveCards.some(movecard => movecard.name === moveCard.name);
+    }
+
     movePiece(currentLocation, newLocation, moveCard, team) {
         if (this.gameOver) {
             return 'Game is over';
         }
 
         let moveCards = team === 1 ? this.player1MoveCards : this.player2MoveCards
-        const validMovesForCard = this.getAvailableMovesForPiece(currentLocation, [moveCard], team);
+
+        let validMovesForCard = []
+
+        // convert FE movecard to BE
+        if (moveCard !== null){
+            moveCard = new MoveCard(
+                moveCard.name, 
+                moveCard.movements.map(movement => new Movement(movement.horizontal, movement.vertical))
+            );
+        }
+
+        // If a move card is provided, use it. Otherwise try to determine
+        // if there is a singular card in the players inventory that works.
+        if (moveCard !== undefined && moveCard !== null){
+            validMovesForCard = this.getAvailableMovesForPiece(currentLocation, [moveCard], team);
+
+            // reset the FE moveCard with the BE one
+            moveCard = moveCards.find(mc => mc.name === moveCard.name)
+        }else{
+            const potentialMoveCard = this.getOnlyValidMoveCard(currentLocation, newLocation, moveCards, team)
+            if (potentialMoveCard == null){
+                console.log("there isn't a way to determine what move card you are trying to use")
+                return "there isn't a way to determine what move card you are trying to use"
+            }
+
+            validMovesForCard = this.getAvailableMovesForPiece(currentLocation, [potentialMoveCard], team);
+            moveCard = potentialMoveCard
+        }
+        
 
         // check to make sure there is actually a piece at the current location
         const currentPiece = this.board[currentLocation[0]][currentLocation[1]];
@@ -173,13 +207,13 @@ export class Copitama {
             return 'thats not yours';
         }
 
-        if (!moveCards.includes(moveCard) || !this.isMoveInValidMoves(validMovesForCard, newLocation)) {
+        if (!this.isMoveCardInMoveCards(moveCards, moveCard)) {
             console.log("You don't have that moveCard")
             return "You don't have that moveCard";
         }
 
 
-        if (!this.isMoveInValidMoves(this.getAvailableMovesForPiece(currentLocation, moveCards, team), newLocation)) {
+        if (!this.isMoveInValidMoves(this.getAvailableMovesForPiece(currentLocation, [moveCard], team), newLocation)) {
             console.log("You can't move there with that piece and moveCard")
             return "You can't move there with that piece and moveCard";
         }
@@ -195,10 +229,12 @@ export class Copitama {
         console.log(`Player ${team} moves from ${currentLocation} to ${newLocation} using ${moveCard.name}`);
 
         // Check to see if piece removed was the head monk
-        if (eliminatedCell !== null && eliminatedCell.isMasterMonk) {
+        if (eliminatedCell.isMasterMonk) {
             console.log('Master Monk Eliminated!');
             this.gameOver = true;
         }
+
+        // TODO: Modify win condition for if master monk sits on throne
 
         // Move the movecards around
         if (team === 1) {
@@ -215,6 +251,11 @@ export class Copitama {
 
         console.log('\nCards have been moved');
 
+        this.activePlayer = this.activePlayer == 1 ? 2 : 1
+
+
+        console.log('\nActive Player has been switched');
+
         // ! This is for debugging only, and doesn't need to be kept when transitioned to an api
         let moves = [];
 
@@ -230,6 +271,53 @@ export class Copitama {
         console.log('P2', moves);
 
         console.log('floater:', this.floaterMove[0].name)
+
+        // notify it was successful
+        return true
+    }
+
+    // used to determine if a move for a certain location matches just one
+    // move card. This function does not validate if a piece can actually
+    // move there based on game logic.
+    //
+    //  * if there are 2 movecards that could take piece X
+    //    to location Y, the function will return null.
+    //  * if there are no movecards that could take piece X
+    //    to location Y, the function will return null
+    //  * if there is only one movecard that can take piece X
+    //    to location Y, the function will return that moveCard.
+    getOnlyValidMoveCard(currentLocation, newLocation, moveCards, team){
+
+        let isValidForMoveCardOne = false
+        let isValidForMoveCardTwo = false
+
+        console.log('TESTING getOnlyValidMoveCard')
+        console.log('team', team)
+        console.log('moveCards for team', team === 1 ? this.player1MoveCards : this.player2MoveCards)
+        console.log('currentLocation', currentLocation)
+        console.log('newLocation', newLocation)
+        console.log('moveCards', moveCards)
+        console.log('move[0]', this.getAvailableMovesForPiece(currentLocation, [moveCards[0]], team))
+        console.log('move[1]', this.getAvailableMovesForPiece(currentLocation, [moveCards[1]], team))
+
+        isValidForMoveCardOne = this.isMoveInValidMoves(this.getAvailableMovesForPiece(currentLocation, [moveCards[0]], team), newLocation)
+        isValidForMoveCardTwo = this.isMoveInValidMoves(this.getAvailableMovesForPiece(currentLocation, [moveCards[1]], team), newLocation)
+
+        if (isValidForMoveCardOne && isValidForMoveCardTwo) {
+            // If both are valid, return null
+            return null;
+        } else if (isValidForMoveCardOne) {
+            // If only the first is valid, return the first move card
+            return moveCards[0];
+        } else if (isValidForMoveCardTwo) {
+            // If only the second is valid, return the second move card
+            return moveCards[1];
+        }
+
+        // If neither are valid, return null
+        return null;
+
+
     }
 
     overrideMovePiece(currentLocation, newLocation) {
@@ -242,6 +330,9 @@ export class Copitama {
 
         this.board[newLocation[0]][newLocation[1]] = currentPiece;
         this.board[currentLocation[0]][currentLocation[1]] = null
+
+        this.activePlayer = this.activePlayer === 1 ? 2 : 1
+
         return true
     }
 
@@ -253,7 +344,8 @@ export class Copitama {
             player2MoveCards: this.player2MoveCards,
             floaterMove: this.floaterMove,
             history: this.history,
-            gameOver: this.gameOver
+            gameOver: this.gameOver,
+            activePlayer: this.activePlayer
         }
     }
 

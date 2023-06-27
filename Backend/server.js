@@ -112,20 +112,21 @@ async function run() {
                 localGameState = game.getGameStatus()
 
                 console.log('updating clients')
-                console.log(localGameState)
+                // console.log(localGameState)
 
                 //console.log('Pushing to data to clients', game.getGameStatus());
 
                 // publish new data                 
-                res.write(`data: ${JSON.stringify(game.getGameStatus().board)}\n\n`);
+                res.write(`data: ${JSON.stringify(game.getGameStatus())}\n\n`);
             }
         }
     });
 
     // demo move piece endpoint
     app.post('/move', (req, res) => {
-        console.log('endpoint was hit')
-        const { currentPosition, destination } = req.body.data;
+        console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nendpoint was hit')
+        const { currentPosition, destination, selectedMove, activePlayer} = req.body.data;
+        console.log(req.body.data)
 
         // Validate input
         if (!Array.isArray(currentPosition) || currentPosition.length !== 2 ||
@@ -138,7 +139,7 @@ async function run() {
             return res.status(400).json({ error: 'Invalid input' });
         }
 
-        let wasSuccessfulMove = game.overrideMovePiece(currentPosition, destination);
+        let wasSuccessfulMove = game.movePiece(currentPosition, destination, selectedMove !== "" ? selectedMove : null, activePlayer );
 
         console.log('successfully moved piece? ', wasSuccessfulMove)
 
@@ -153,7 +154,7 @@ async function run() {
 
 
 
-    await app.listen(5000);
-    console.log('Listening on port 5000');
+    await app.listen(5007);
+    console.log('Listening on port 5007');
 }
 
