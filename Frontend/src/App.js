@@ -17,6 +17,8 @@ const gameService = new GameService()
 // TODO: reverse move cards of red player so that it's clearer what moves are available to each
 // player.
 
+// TODO: When a movecard is highlighted, and then a piece is selected, only highlight cells obtainable via that move card.
+
 
 function App() {
 

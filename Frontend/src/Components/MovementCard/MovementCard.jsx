@@ -65,14 +65,14 @@ import cx from 'classnames';
         return 'border-red-500'
       }
 
-      return ''
+      return 'border-[#7D7A79]'
 
     }
 
 
 
     return (
-      <div onClick={() => handleSelection(title)} className={cx("border-4 border-[#7D7A79] bg-[#dcd8cf] rounded-[10px] m-4 py-4 px-12 text-center", highlightBorder())}>
+      <div onClick={() => handleSelection(title)} className={cx("border-4 bg-[#dcd8cf] rounded-[10px] m-4 py-4 px-12 text-center", highlightBorder())}>
         <div className={cx(rotateGrid())}>
 
               {board.map((row, rowIndex) => (
