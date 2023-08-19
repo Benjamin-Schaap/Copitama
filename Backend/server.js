@@ -143,6 +143,14 @@ async function run() {
         }
     });
 
+    app.post('/newGame', (_, res) => {
+
+        game = new Copitama()
+
+        return res.status(200).json({ message: 'New Game Started' })
+
+    });
+
 
 
 

@@ -15,8 +15,6 @@ const gameService = new GameService()
 
 // TODO: Standardize on using either red/blue or 1/2 for player identification
 
-// TODO: have a way for the frontend to start a new game
-
 // TODO: Make it so that the board data structure for the backend and frontend are the same.
 // possibly also make it so that the divs in the front end are formatting 2D instead of 1D
 
@@ -45,16 +43,6 @@ function App() {
     };
   }, []);
 
-  // because gameboard consumes the SSE stream and not app, this doesn't fix ALL loading issues. 
-  // TODO: consider a refactor of the SSE stream to app.js.
-  if (player1MoveCards === undefined || player2MoveCards === undefined || floaterMove === undefined) {
-    return (<div className='h-screen bg-slate-500 justify-center flex flex-col items-center'>Loading</div>)
-  }
-
-  if (gameService.isGameOver()) {
-    return (<div className='h-screen bg-slate-500 justify-center flex flex-col items-center text-white'>Game Over</div>)
-  }
-
   const submitMove = async (currentPosition, destination) => {
     // Perform axios request or any other backend interaction here
     try {
@@ -64,6 +52,38 @@ function App() {
       console.error(error)
       console.log('Continuing locally')
     }
+  }
+
+  const submitNewGame = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/newGame');
+      console.log('New game started', response.data);
+      // TODO fix state management
+      window.location.reload()
+    } catch (error) {
+      console.error(error);
+      console.log('Failed to start a new game');
+    }
+  }
+
+  // because gameboard consumes the SSE stream and not app, this doesn't fix ALL loading issues. 
+  // TODO: consider a refactor of the SSE stream to app.js.
+  if (player1MoveCards === undefined || player2MoveCards === undefined || floaterMove === undefined) {
+    return (<div className='h-screen bg-slate-500 justify-center flex flex-col items-center'>Loading</div>)
+  }
+
+  if (gameService.isGameOver()) {
+    return (
+      <div className='h-screen bg-slate-500 justify-center flex flex-col items-center text-white'>
+        Game Over
+        <button
+          onClick={submitNewGame}
+          class="bg-blue-500 hover:bg-blue-600 text-white font-semibold mt-3 py-2 px-4 rounded-full">
+          Start new game
+        </button>
+
+
+      </div>)
   }
 
   const handleSelection = (title) => {
