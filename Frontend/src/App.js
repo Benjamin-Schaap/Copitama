@@ -72,7 +72,13 @@ function App() {
 
     const matchingMoveCard = selectedMoveCards.find(moveCard => moveCard.name === title);
     console.log('selectedMoveCard', matchingMoveCard !== undefined ? matchingMoveCard : "")
-    setSelectedMove(matchingMoveCard !== undefined ? matchingMoveCard : "")
+
+    // deselect logic
+    if (matchingMoveCard.name === selectedMove.name) {
+      setSelectedMove("")
+    } else {
+      setSelectedMove(matchingMoveCard !== undefined ? matchingMoveCard : "")
+    }
   };
 
 
