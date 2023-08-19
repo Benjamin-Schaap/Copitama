@@ -86,7 +86,6 @@ export class Copitama {
         return this.board;
     }
 
-    // TODO: There needs to be some logic around what moveCard a user chooses to use
     getAvailableMovesForPiece(pieceLocation, moveCards, team) {
         let validMoves = [];
         let pieceRowCoord = pieceLocation[0];
@@ -141,7 +140,6 @@ export class Copitama {
         return pieceCoord;
     }
 
-    // god I hate javascript
     isMoveInValidMoves(validMovesForCard, newLocation) {
 
         let wasThereAValidMove = false
@@ -169,23 +167,23 @@ export class Copitama {
         let validMovesForCard = []
 
         // convert FE movecard to BE
-        if (moveCard !== null){
+        if (moveCard !== null) {
             moveCard = new MoveCard(
-                moveCard.name, 
+                moveCard.name,
                 moveCard.movements.map(movement => new Movement(movement.horizontal, movement.vertical))
             );
         }
 
         // If a move card is provided, use it. Otherwise try to determine
         // if there is a singular card in the players inventory that works.
-        if (moveCard !== undefined && moveCard !== null){
+        if (moveCard !== undefined && moveCard !== null) {
             validMovesForCard = this.getAvailableMovesForPiece(currentLocation, [moveCard], team);
 
             // reset the FE moveCard with the BE one
             moveCard = moveCards.find(mc => mc.name === moveCard.name)
-        }else{
+        } else {
             const potentialMoveCard = this.getOnlyValidMoveCard(currentLocation, newLocation, moveCards, team)
-            if (potentialMoveCard == null){
+            if (potentialMoveCard == null) {
                 console.log("there isn't a way to determine what move card you are trying to use")
                 return "there isn't a way to determine what move card you are trying to use"
             }
@@ -193,7 +191,7 @@ export class Copitama {
             validMovesForCard = this.getAvailableMovesForPiece(currentLocation, [potentialMoveCard], team);
             moveCard = potentialMoveCard
         }
-        
+
 
         // check to make sure there is actually a piece at the current location
         const currentPiece = this.board[currentLocation[0]][currentLocation[1]];
@@ -234,7 +232,15 @@ export class Copitama {
             this.gameOver = true;
         }
 
-        // TODO: Modify win condition for if master monk sits on throne
+        if (newLocation[0] === 0 && newLocation[1] == 2 && this.activePlayer === 1) {
+            console.log('Player 1 sat on the enemy throne!')
+            this.gameOver = true
+        }
+
+        if (newLocation[0] === 4 && newLocation[1] == 2 && this.activePlayer === 2) {
+            console.log('Player 2 sat on the enemy throne!')
+            this.gameOver = true
+        }
 
         // Move the movecards around
         if (team === 1) {
@@ -286,7 +292,7 @@ export class Copitama {
     //    to location Y, the function will return null
     //  * if there is only one movecard that can take piece X
     //    to location Y, the function will return that moveCard.
-    getOnlyValidMoveCard(currentLocation, newLocation, moveCards, team){
+    getOnlyValidMoveCard(currentLocation, newLocation, moveCards, team) {
 
         let isValidForMoveCardOne = false
         let isValidForMoveCardTwo = false

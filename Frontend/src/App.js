@@ -3,22 +3,22 @@ import GameBoard from './Components/GameBoard/GameBoard';
 import MovementCard from './Components/MovementCard/MovementCard';
 import GameServiceContext from './Contexts/GameServiceContext';
 import axios from 'axios'
-import { MoveCard, Movement, GameService } from './Services/gameService';
+import { GameService } from './Services/gameService';
 import { useState, useEffect } from 'react';
-
-const tiger = new MoveCard('tiger', [new Movement(0, 1), new Movement(0, -2)]);
-const elephant = new MoveCard('elephant', [new Movement(-1, 0), new Movement(1, 0), new Movement(1, -1), new Movement(-1, -1)]);
-const hackMove = new MoveCard('hack', [new Movement(0, 2,), new Movement(2, 0), new Movement(2, 2)]);
-const crane = new MoveCard('crane', [new Movement(0, -1), new Movement(-1, 1), new Movement(1, 1)]);
-const dragon = new MoveCard('dragon', [new Movement(1, 1), new Movement(-1, 1), new Movement(2, -1), new Movement(-2, -1)]);
 
 const gameService = new GameService()
 
 // TODO: reverse move cards of red player so that it's clearer what moves are available to each
-// player.
+// player. (flip the board 180)
 
 // TODO: When a movecard is highlighted, and then a piece is selected, only highlight cells obtainable via that move card.
 
+// TODO: Standardize on using either red/blue or 1/2 for player identification
+
+// TODO: have a way for the frontend to start a new game
+
+// TODO: Make it so that the board data structure for the backend and frontend are the same.
+// possibly also make it so that the divs in the front end are formatting 2D instead of 1D
 
 function App() {
 

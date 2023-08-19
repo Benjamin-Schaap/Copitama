@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import cx from 'classnames';
 
 
@@ -9,18 +9,10 @@ import cx from 'classnames';
   handleSelection = () => {},
   isSelected = false}) => {
 
-    //cellsToHighlight = [[0,2], [0, -2], [1,0]]
-    //console.log(title, cellsToHighlight)
-
     // the piece is always in the middle of the board in a movement card.
     const piecePosition = [2,2]
 
     const getHighlightedCells = ( cellsToHighlight ) => {
-      
-        // HEX COLORS
-        //#eaed93
-        // #918672
-        // #2FB85E
 
         let grid = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => null));
 

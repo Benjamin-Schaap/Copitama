@@ -17,13 +17,12 @@ import cx from 'classnames';
       }
     }
 
-    // TODO: Only active if the cell belongs to that player.
     let getActiveTheme = () => {
 
       if (shouldHighlight){
         return "border-1 bg-yellow-300 border-yellow-400"
       } else if ((!isKing && !isPawn) || !isActive){
-        return 'border-slate-500 bg-[#dcd8cf]' // bg-white
+        return 'border-slate-500 bg-[#dcd8cf]'
       }
 
       if (owner === Player.BLUE){

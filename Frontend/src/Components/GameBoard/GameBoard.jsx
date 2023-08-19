@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import GameCell from "../GameCell/GameCell";
 import Player from "../PlayerEnum";
-import { MoveCard, Movement, GamePiece, GameService } from "../../Services/gameService";
 import GameServiceContext from "../../Contexts/GameServiceContext";
 
 const GameBoard = ({onMoveSubmit }) => {
@@ -10,7 +9,6 @@ const GameBoard = ({onMoveSubmit }) => {
     const [activeTile, setActiveTile] = useState(null)
     const [tilesPieceCanMoveto, setTilesPieceCanMoveto] = useState([])
 
-    // TODO: Change this
     const team = gameService.getActivePlayer()
     const teamColor = team === 1? Player.BLUE : Player.RED
     const board = gameService.getBoard()
@@ -25,9 +23,6 @@ const GameBoard = ({onMoveSubmit }) => {
         } else if (board[activeTile].owner !== null 
             && board[activeTile].owner !== board[index].owner
             && board[activeTile].owner === owner){
-
-            // TODO: validate if the piece is owned by the active player
-            // TODO: tie move cards to active player pieces and highlighting.
 
             // rows are 5 squares long.
             let newRow = Math.floor(index / 5)
@@ -44,13 +39,13 @@ const GameBoard = ({onMoveSubmit }) => {
             }
 
             onMoveSubmit([currentRow, currentCol], [newRow, newCol]);
-            console.log('submitted')
+            console.log('submitted move')
 
             resetHighlights()
             return
         }
         
-        if (board[index].owner === teamColor){ //TODO: refactor to not use color
+        if (board[index].owner === teamColor){ 
             setTilesPieceCanMoveto(getAvailableMovesForCell(index))
         }else{
             setTilesPieceCanMoveto([])

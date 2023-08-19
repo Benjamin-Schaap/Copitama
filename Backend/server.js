@@ -11,16 +11,11 @@ async function run() {
 
     let game = new Copitama()
 
-    // TODO: Fix this not working
+    // ! Currently does not work - consider deleting since we plan to move from SSE
     function arraysEqual(a, b) {
         if (a === b) return true;
         if (a == null || b == null) return false;
         if (a.length !== b.length) return false;
-
-        // If you don't care about the order of the elements inside
-        // the array, you should sort both arrays here.
-        // Please note that calling sort on an array will modify that array.
-        // you might want to clone your array first.
 
         for (var i = 0; i < a.length; ++i) {
             if (a[i] !== b[i]) return false;
@@ -112,9 +107,6 @@ async function run() {
                 localGameState = game.getGameStatus()
 
                 console.log('updating clients')
-                // console.log(localGameState)
-
-                //console.log('Pushing to data to clients', game.getGameStatus());
 
                 // publish new data                 
                 res.write(`data: ${JSON.stringify(game.getGameStatus())}\n\n`);
@@ -125,7 +117,7 @@ async function run() {
     // demo move piece endpoint
     app.post('/move', (req, res) => {
         console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nendpoint was hit')
-        const { currentPosition, destination, selectedMove, activePlayer} = req.body.data;
+        const { currentPosition, destination, selectedMove, activePlayer } = req.body.data;
         console.log(req.body.data)
 
         // Validate input
@@ -139,7 +131,7 @@ async function run() {
             return res.status(400).json({ error: 'Invalid input' });
         }
 
-        let wasSuccessfulMove = game.movePiece(currentPosition, destination, selectedMove !== "" ? selectedMove : null, activePlayer );
+        let wasSuccessfulMove = game.movePiece(currentPosition, destination, selectedMove !== "" ? selectedMove : null, activePlayer);
 
         console.log('successfully moved piece? ', wasSuccessfulMove)
 
@@ -154,7 +146,7 @@ async function run() {
 
 
 
-    await app.listen(5007);
-    console.log('Listening on port 5007');
+    await app.listen(5000);
+    console.log('Listening on port 5000');
 }
 
